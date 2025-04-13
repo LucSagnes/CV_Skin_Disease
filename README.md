@@ -1,5 +1,7 @@
-# CV_Lung_Cancer
-Projet deep learning Computer Vision sur le Cancer Lung
+# CV Skin_Cancer
+Deep Learning Project on Skin Cancer
+
+More than 50% of lesions are confirmed through histopathology (histo), the ground truth for the rest of the cases is either follow-up examination (follow_up), expert consensus (consensus), or confirmation by in-vivo confocal microscopy (confocal).
 
 
 Create a virtual environment with 
@@ -9,7 +11,18 @@ Create a virtual environment with
 
  "conda activate cv_lung_project python=3.11"
 
-For notebook we used Marimo which is user friendly, if you want a Jupyter notebook : marimo convert your_notebook.ipynb > your_notebook.py
+
+To Upload the data, Make sure git-lfs is installed (https://git-lfs.com)
+git lfs install
+
+Then you can just downloa the data for the project with 
+git clone https://huggingface.co/datasets/marmal88/skin_cancer
+
+If you want to clone without large files - just their pointers
+GIT_LFS_SKIP_SMUDGE=1 git clone https://huggingface.co/datasets/marmal88/skin_cancer
+
+
+For notebook we used Marimo which is git friendly, if you want a Jupyter notebook : marimo convert your_notebook.ipynb > your_notebook.py
 
 To run the notebook, marimo run your_notebook.py
 
