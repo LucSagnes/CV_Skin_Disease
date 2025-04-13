@@ -12,7 +12,7 @@ Create a virtual environment with
  `conda activate cv_lung_project python=3.11`
 
 
-## To Upload the data
+## Download the data
 Make sure git-lfs is installed (https://git-lfs.com)
 `git lfs install`
 
@@ -23,6 +23,7 @@ If you want to clone without large files - just their pointers
 `GIT_LFS_SKIP_SMUDGE=1 git clone https://huggingface.co/datasets/marmal88/skin_cancer`
 
 
+## Notebook Usage
 For notebook we used Marimo which is git friendly, if you want a Jupyter notebook : 
 `marimo convert your_notebook.ipynb > your_notebook.py`
 
