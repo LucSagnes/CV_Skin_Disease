@@ -1,0 +1,97 @@
+{
+  "version": "1",
+  "metadata": {
+    "marimo_version": "0.12.9"
+  },
+  "cells": [
+    {
+      "id": "Hbol",
+      "code_hash": "4308ccf29d88ba43fb11a8d8011fd221",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "MJUe",
+      "code_hash": "02d80e63f70843757c790808293f6b24",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "name 'torch' is not defined",
+          "traceback": []
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stderr",
+          "text": "<span class=\"codehilite\"><div class=\"highlight\"><pre><span></span><span class=\"gt\">Traceback (most recent call last):</span>\n  File <span class=\"nb\">&quot;C:\\Users\\flori\\anaconda3\\envs\\cv_skin_cancer\\Lib\\site-packages\\marimo\\_runtime\\executor.py&quot;</span>, line <span class=\"m\">141</span>, in <span class=\"n\">execute_cell</span>\n<span class=\"w\">    </span><span class=\"n\">exec</span><span class=\"p\">(</span><span class=\"n\">cell</span><span class=\"o\">.</span><span class=\"n\">body</span><span class=\"p\">,</span> <span class=\"n\">glbls</span><span class=\"p\">)</span>\n  File <span class=\"nb\">&quot;C:\\Users\\flori\\AppData\\Local\\Temp\\marimo_28052\\__marimo__cell_MJUe_.py&quot;</span>, line <span class=\"m\">1</span>, in <span class=\"n\">&lt;module&gt;</span>\n<span class=\"w\">    </span><span class=\"n\">device</span> <span class=\"o\">=</span> <span class=\"n\">torch</span><span class=\"o\">.</span><span class=\"n\">device</span><span class=\"p\">(</span><span class=\"s1\">&#39;cuda&#39;</span> <span class=\"k\">if</span> <span class=\"n\">torch</span><span class=\"o\">.</span><span class=\"n\">cuda</span><span class=\"o\">.</span><span class=\"n\">is_available</span><span class=\"p\">()</span> <span class=\"k\">else</span> <span class=\"s1\">&#39;cpu&#39;</span><span class=\"p\">)</span>\n<span class=\"w\">             </span><span class=\"pm\">^^^^^</span>\n<span class=\"gr\">NameError</span>: <span class=\"n\">name &#39;torch&#39; is not defined</span>\n</pre></div>\n</span>"
+        }
+      ]
+    },
+    {
+      "id": "vblA",
+      "code_hash": "f65d08c38bccf484ae0f1ca9ddadf801",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "bkHC",
+      "code_hash": "cc89e3fe7c9fb76e1ed9d23748a5bcff",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "lEQa",
+      "code_hash": "41b19e3a563b5391bcf4070ef9117836",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<div style='display: flex;flex: 1;flex-direction: column;justify-content: flex-start;align-items: normal;flex-wrap: nowrap;gap: 0.5rem'><img src=\"data:image/png;base64,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\" alt=\"\" /></div>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "PKri",
+      "code_hash": "9e636952f61442b557e01067cf5e8072",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "Xref",
+      "code_hash": "b6fb188e1505d3bc3e97a9a4a30f290d",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "SFPL",
+      "code_hash": "1c3bbbb55780ad951685ac32eb280a39",
+      "outputs": [],
+      "console": []
+    }
+  ]
+}
