@@ -9,7 +9,7 @@ Create a virtual environment with
 
  and then 
 
- `conda activate cv_lung_project python=3.11`
+ `conda activate cv_skin_cancer python=3.11`
 
 
 ## Download the data

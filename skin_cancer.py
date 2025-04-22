@@ -6,31 +6,44 @@ app = marimo.App(width="medium")
 
 @app.cell
 def _():
+    from typing import Union
+
     import marimo as mo
 
     from IPython.display import display
     import pandas as pd
     import numpy as np
 
-    from sklearn.model_selection import train_test_split
+    from sklearn.preprocessing import LabelEncoder
 
     import torch
-    from torch.utils.data import DataLoader, TensorDataset
+    from torch.utils.data import Dataset, DataLoader, TensorDataset
     import torch.nn as nn
     import torch.nn.functional as F
     import torch.optim as optim
 
+    from torchvision.transforms import transforms
+
     from models import SmallNetwork
+
+    from preprocessing import import_and_preprocess
 
     import matplotlib.pyplot as plt
     from PIL import Image
+
+    from datasets import load_dataset
     return (
         DataLoader,
+        Dataset,
         F,
         Image,
+        LabelEncoder,
         SmallNetwork,
         TensorDataset,
+        Union,
         display,
+        import_and_preprocess,
+        load_dataset,
         mo,
         nn,
         np,
@@ -38,8 +51,63 @@ def _():
         pd,
         plt,
         torch,
-        train_test_split,
+        transforms,
     )
+
+
+@app.cell
+def _(import_and_preprocess):
+    import_and_preprocess(dataset="marmal88/skin_cancer",
+                          resize=(256, 256),
+                          centercrop=(224, 224),
+                          batch_size=64,
+                          shuffle=True)
+    return
+
+
+@app.cell
+def _(load_dataset):
+    ds = load_dataset("marmal88/skin_cancer")
+    return (ds,)
+
+
+@app.cell
+def _():
+    return
+
+
+@app.cell
+def _(ds, np, preprocess_transforms, torch):
+    # Transforms train images in an array, into another array
+    train_orig = torch.from_numpy(
+        np.array([preprocess_transforms(ds['train'][idx]['image']) for idx in range(len(ds['train']))])
+    )
+
+    valid_orig = np.array([np.array(ds['validation'][idx]['image']) for idx in range(len(ds['validation']))])
+    test_orig = np.array([np.array(ds['test'][idx]['image']) for idx in range(len(ds['test']))])
+    return test_orig, train_orig, valid_orig
+
+
+@app.cell
+def _(LabelEncoder, ds, np):
+    le_labels = LabelEncoder()
+
+    train_labels = le_labels.fit_transform(np.array(ds['train']['dx']))
+    # valid_labels = le_labels.transform(np.array(ds['validation']['dx']))
+    # test_labels = le_labels.transform(np.array(ds['test']['dx']))
+    return le_labels, train_labels
+
+
+@app.cell
+def _(train_orig):
+    train_orig.shape
+    return
+
+
+@app.cell
+def _(le_labels):
+    dict(zip(le_labels.classes_, le_labels.transform(le_labels.classes_)))
+    return
 
 
 @app.cell
@@ -50,37 +118,7 @@ def _(torch):
 
 
 @app.cell
-def _(DataLoader, TensorDataset, np, pd, torch):
-    def import_and_shape(data_path: str = None, as_array: bool = False) -> tuple:
-        """
-        Import csv data and puts it in the right format (here 28x28x3)
-
-        Parameters
-        ----------
-        data_path : str
-            Data path, as a string
-        as_array : bool
-            Return data and label as array
-
-        Returns
-        -------
-        tuple
-
-        Example
-        -------
-        >>> import_and_shape("Data/my_data.csv") -> data, label
-        """
-
-        tmp = pd.read_csv(data_path)
-        data, label = tmp[[col for col in tmp.columns if "label" not in col]], tmp["label"]
-
-        if as_array:
-            data = np.reshape(data, (len(data), 28, 28, 3))
-            label = np.array(label)
-
-        return data, label
-
-
+def _(DataLoader, TensorDataset, np, torch):
     def numpy_to_dataloader(data: np.array = None, labels: np.array = None, batch_size: int = 32):
         """
         Convert a numpy array to a fully prepared DataLoader object.
@@ -100,42 +138,50 @@ def _(DataLoader, TensorDataset, np, pd, torch):
         dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
         return dataloader
-    return import_and_shape, numpy_to_dataloader
+    return (numpy_to_dataloader,)
 
 
 @app.cell
-def _(import_and_shape, numpy_to_dataloader, train_test_split):
-    data_path = "Data/hmnist_28_28_RGB.csv"
-    X_orig, y_orig = import_and_shape(data_path=data_path, as_array=True)
-    X_train, X_test, y_train, y_test = train_test_split(X_orig, y_orig, test_size=0.2)
-
+def _(
+    numpy_to_dataloader,
+    test_labels,
+    test_orig,
+    train_labels,
+    train_orig,
+    valid_labels,
+    valid_orig,
+):
     batch_size = 128
 
-    train_loader = numpy_to_dataloader(X_train, y_train, batch_size)
-    test_loader = numpy_to_dataloader(X_test, y_test, batch_size)
-    return (
-        X_orig,
-        X_test,
-        X_train,
-        batch_size,
-        data_path,
-        test_loader,
-        train_loader,
-        y_orig,
-        y_test,
-        y_train,
-    )
+    train_loader = numpy_to_dataloader(train_orig, train_labels, batch_size)
+    valid_loader = numpy_to_dataloader(valid_orig, valid_labels, batch_size)
+    test_loader = numpy_to_dataloader(test_orig, test_labels, batch_size)
+    return batch_size, test_loader, train_loader, valid_loader
 
 
 @app.cell
-def _(Image, X_orig, display, np):
-    image = Image.fromarray(X_orig[5].astype(np.uint8))
-    display(image)
-    return (image,)
+def _(display, train_orig, transforms):
+    display(transforms.ToPILImage()(train_orig[24]))
+    return
 
 
 @app.cell
-def _():
+def _(display, ds):
+    # resize = Resize(size=(256, 256))
+    out = ds['train'][24]['image']
+    display(out)
+    return (out,)
+
+
+@app.cell
+def _(train_loader):
+    train_loader.dataset[0]
+    return
+
+
+@app.cell
+def _(resize, train_loader):
+    resize(train_loader.dataset[2][0]).shape
     return
 
 
@@ -191,12 +237,6 @@ def _(F, SmallNetwork, device, optim, test_loader, torch, train_loader):
         test_loss,
         y_pred,
     )
-
-
-@app.cell
-def _(label):
-    label.shape
-    return
 
 
 if __name__ == "__main__":
