@@ -24,7 +24,7 @@ def _():
 
     from torchvision.transforms import transforms
 
-    from models import SmallNetwork
+    from models import SmallNetwork, ResNet18
 
     from preprocessing import import_and_preprocess
 
@@ -38,6 +38,7 @@ def _():
         F,
         Image,
         LabelEncoder,
+        ResNet18,
         SmallNetwork,
         TensorDataset,
         Union,
@@ -56,61 +57,6 @@ def _():
 
 
 @app.cell
-def _(import_and_preprocess):
-    import_and_preprocess(dataset="marmal88/skin_cancer",
-                          resize=(256, 256),
-                          centercrop=(224, 224),
-                          batch_size=64,
-                          shuffle=True)
-    return
-
-
-@app.cell
-def _(load_dataset):
-    ds = load_dataset("marmal88/skin_cancer")
-    return (ds,)
-
-
-@app.cell
-def _():
-    return
-
-
-@app.cell
-def _(ds, np, preprocess_transforms, torch):
-    # Transforms train images in an array, into another array
-    train_orig = torch.from_numpy(
-        np.array([preprocess_transforms(ds['train'][idx]['image']) for idx in range(len(ds['train']))])
-    )
-
-    valid_orig = np.array([np.array(ds['validation'][idx]['image']) for idx in range(len(ds['validation']))])
-    test_orig = np.array([np.array(ds['test'][idx]['image']) for idx in range(len(ds['test']))])
-    return test_orig, train_orig, valid_orig
-
-
-@app.cell
-def _(LabelEncoder, ds, np):
-    le_labels = LabelEncoder()
-
-    train_labels = le_labels.fit_transform(np.array(ds['train']['dx']))
-    # valid_labels = le_labels.transform(np.array(ds['validation']['dx']))
-    # test_labels = le_labels.transform(np.array(ds['test']['dx']))
-    return le_labels, train_labels
-
-
-@app.cell
-def _(train_orig):
-    train_orig.shape
-    return
-
-
-@app.cell
-def _(le_labels):
-    dict(zip(le_labels.classes_, le_labels.transform(le_labels.classes_)))
-    return
-
-
-@app.cell
 def _(torch):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f"Using device : {device}")
@@ -118,114 +64,100 @@ def _(torch):
 
 
 @app.cell
-def _(DataLoader, TensorDataset, np, torch):
-    def numpy_to_dataloader(data: np.array = None, labels: np.array = None, batch_size: int = 32):
-        """
-        Convert a numpy array to a fully prepared DataLoader object.
-
-        Parameters
-        ----------
-        data : np.array
-            Data as a numpy array
-        labels : np.array
-            Labels corresponding to the data, must be shape (n, ) or (n, 1)
-        """
-        # transform to a tensor and normalize
-        torch_data = torch.from_numpy(data).permute(0, 3, 1, 2).float() / 255.0
-        torch_label = torch.from_numpy(labels).long()
-
-        dataset = TensorDataset(torch_data, torch_label)
-        dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
-
-        return dataloader
-    return (numpy_to_dataloader,)
+def _(import_and_preprocess):
+    train_dataloader, valid_dataloader, test_dataloader, label_mapping = import_and_preprocess(
+        dataset="marmal88/skin_cancer",
+        resize=(256, 256),
+        centercrop=(224, 224),
+        batch_size=64,
+        shuffle=True
+    )
+    return label_mapping, test_dataloader, train_dataloader, valid_dataloader
 
 
 @app.cell
-def _(
-    numpy_to_dataloader,
-    test_labels,
-    test_orig,
-    train_labels,
-    train_orig,
-    valid_labels,
-    valid_orig,
-):
-    batch_size = 128
-
-    train_loader = numpy_to_dataloader(train_orig, train_labels, batch_size)
-    valid_loader = numpy_to_dataloader(valid_orig, valid_labels, batch_size)
-    test_loader = numpy_to_dataloader(test_orig, test_labels, batch_size)
-    return batch_size, test_loader, train_loader, valid_loader
+def _(display, label_mapping, np, train_dataloader, transforms):
+    random_idx = np.random.choice([i for i in range(len(train_dataloader))])
+    img = transforms.ToPILImage()(train_dataloader.dataset[random_idx][0])
+    img_label = label_mapping[int(train_dataloader.dataset[random_idx][1])]
+    print(img_label)
+    display(img)
+    return img, img_label, random_idx
 
 
 @app.cell
-def _(display, train_orig, transforms):
-    display(transforms.ToPILImage()(train_orig[24]))
-    return
+def _(ResNet18, device, nn, optim, torch, train_dataloader, valid_dataloader):
+    # model = SmallNetwork().to(device)
+    model = ResNet18(num_classes=7).to(device)
+    criterion = nn.CrossEntropyLoss()
+    optimizer = optim.Adam(model.parameters(), lr=0.0001)
 
-
-@app.cell
-def _(display, ds):
-    # resize = Resize(size=(256, 256))
-    out = ds['train'][24]['image']
-    display(out)
-    return (out,)
-
-
-@app.cell
-def _(train_loader):
-    train_loader.dataset[0]
-    return
-
-
-@app.cell
-def _(resize, train_loader):
-    resize(train_loader.dataset[2][0]).shape
-    return
-
-
-@app.cell
-def _(F, SmallNetwork, device, optim, test_loader, torch, train_loader):
-    model = SmallNetwork().to(device)
-
-    # train the model
+    # train the model for n epochs
     n_epochs = 20
     for epoch in range(1, n_epochs + 1):
-        # model.train() useful when there is dropout and BatchNorm
-        for batch_idx, (data, label) in enumerate(train_loader):
+        train_loss_list = []
+        train_correct = 0
+        model.train() # Set model in training mode (useful for BatchNorm and Dropout)
+
+        for batch_idx, (data, label) in enumerate(train_dataloader):
             data, label = data.to(device), label.to(device)
-            optimizer = optim.Adam(model.parameters(), lr=0.001)
+
+            # Make predictions and compute loss
             y_pred = model(data)
-            loss = F.nll_loss(y_pred, label)
+            loss = criterion(y_pred, label)
+            train_loss_list.append(loss)
+
+            # One step optimization
+            optimizer.zero_grad()
             loss.backward()
             optimizer.step()
 
+            # Retrieve correct predictions and count them
+            train_pred = y_pred.argmax(dim=1, keepdim=True)
+            train_correct += train_pred.eq(label.view_as(train_pred)).sum().item()
+
+            # Show metrics foreach 10 batch
             if batch_idx % 10 == 0:
                 print("Train Epoch {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}".format(
-                    epoch, batch_idx * len(data), len(train_loader.dataset),
-                    100 * batch_idx / len(train_loader), loss.item()
+                    epoch, batch_idx * len(data), len(train_dataloader.dataset),
+                    100 * batch_idx / len(train_dataloader), loss.item()
                 ))
 
-        test_loss = 0
-        correct = 0
+        # Average loss and accuracy for the training set
+        avg_train_loss = sum(train_loss_list) / len(train_loss_list)
+        train_size = len(train_dataloader.dataset)
+        print("\nTrain set : Average Loss : {}, Accuracy : {}/{} ({:.0f}%)".format(
+            avg_train_loss, train_correct, train_size, train_correct / train_size * 100
+        ))
+
+        # Validation part
+        val_loss_list = [] 
+        val_correct = 0
+        model.eval() # Set the model in evaluation mode
         with torch.no_grad():
-            for data, label in test_loader:
+            for data, label in valid_dataloader:
                 data, label = data.to(device), label.to(device)
+
+                # Predictions and loss calculation
                 y_pred = model(data)
-                test_loss += F.nll_loss(y_pred, label, reduction='sum').item()
+                val_loss = criterion(y_pred, label)
+                val_loss_list.append(val_loss)
+
+                # Count correct predictions
                 pred = y_pred.argmax(dim=1, keepdim=True)
-                correct += pred.eq(label.view_as(pred)).sum().item()
+                val_correct += pred.eq(label.view_as(pred)).sum().item()
 
-        test_loss /= len(test_loader.dataset)
-
-        print("\nTest set : Average Loss: {:.4f}, Accuracy : {}/{} ({:.0f}%)\n".format(
-            test_loss, correct, len(test_loader.dataset),
-            100 * correct / len(test_loader.dataset)
+        # Average loss and accuracy for validation set
+        avg_val_loss = sum(val_loss_list) / len(val_loss_list)
+        val_size = len(valid_dataloader.dataset)
+        print("\nValidation set : Average Loss: {:.4f}, Accuracy : {}/{} ({:.0f}%)\n".format(
+            avg_val_loss, val_correct, val_size, 100 * val_correct / val_size
         ))
     return (
+        avg_train_loss,
+        avg_val_loss,
         batch_idx,
-        correct,
+        criterion,
         data,
         epoch,
         label,
@@ -234,7 +166,14 @@ def _(F, SmallNetwork, device, optim, test_loader, torch, train_loader):
         n_epochs,
         optimizer,
         pred,
-        test_loss,
+        train_correct,
+        train_loss_list,
+        train_pred,
+        train_size,
+        val_correct,
+        val_loss,
+        val_loss_list,
+        val_size,
         y_pred,
     )
 

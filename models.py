@@ -85,13 +85,15 @@ class SmallNetwork(nn.Module):
 
 
 class ResNet18(nn.Module):
-    def __init__(self, num_classes=6):
+    def __init__(self, num_classes=7):
         super(ResNet18, self).__init__()
-        self.in_channels = 256
-        self.conv1 = nn.Conv2d(in_channels=3, out_channels=64, kernel_size=3, stride=1, padding=1, bias=False)
+
+        self.in_channels = 64
+
+        self.conv1 = nn.Conv2d(in_channels=3, out_channels=64, kernel_size=7, stride=2, padding=1, bias=False)
         self.bn1 = nn.BatchNorm2d(64)
         self.relu = nn.ReLU(inplace=True)
-        self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=2)
+        self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
 
         self.layer1 = self._make_layer(block=BasicBlock, out_channels=64, n_blocks=2, stride=1)
         self.layer2 = self._make_layer(block=BasicBlock, out_channels=128, n_blocks=2, stride=2)

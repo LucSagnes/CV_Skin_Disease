@@ -18,7 +18,7 @@ def import_and_preprocess(dataset: str = "marmal88/skin_cancer",
                           shuffle: bool = True) -> Tuple[DataLoader]:
     """
     Import and preprocess the dataset by resizing it, croping it and convert it to a tensor.
-    Returns training, validation and test set as a tensor of shape (n, 3, 224, 224)
+    Returns training, validation and test set as a tensor of shape (n, 3, 224, 224) + label mapping as a dict.
 
     Parameters
     ----------
@@ -33,7 +33,7 @@ def import_and_preprocess(dataset: str = "marmal88/skin_cancer",
 
     Returns
     -------
-    tuple of DataLoader
+    tuple of DataLoader + dict
     """
     # Import dataset
     ds = load_dataset(dataset)
@@ -44,7 +44,7 @@ def import_and_preprocess(dataset: str = "marmal88/skin_cancer",
     )
 
     # Extract labels
-    train_labels, valid_labels, test_labels = extract_labels(
+    train_labels, valid_labels, test_labels, mapping_dict = extract_labels(
         dataset=ds
     )
     
@@ -58,7 +58,7 @@ def import_and_preprocess(dataset: str = "marmal88/skin_cancer",
     valid_dataloader = create_dataloader(dataset=valid_dataset, batch_size=batch_size, shuffle=shuffle)
     test_dataloader = create_dataloader(dataset=test_dataset, batch_size=batch_size, shuffle=shuffle)
 
-    return train_dataloader, valid_dataloader, test_dataloader
+    return train_dataloader, valid_dataloader, test_dataloader, mapping_dict
 
 
 def transform_and_preprocess(dataset,
@@ -96,28 +96,38 @@ def transform_and_preprocess(dataset,
     # Preprocess the data in a comprehension list, then turn it into a numpy array and finally in a torch.Tensor
     train_orig = torch.from_numpy(
         np.array([
-            preprocess_transforms(dataset['train'][idx]['image'] for idx in range(len(dataset['train'])))
+            preprocess_transforms(dataset['train'][idx]['image']) for idx in range(len(dataset['train']))
         ])
     )
 
     valid_orig = torch.from_numpy(
         np.array([
-            preprocess_transforms(dataset['validation'][idx]['image'] for idx in range(len(dataset['validation'])))
+            preprocess_transforms(dataset['validation'][idx]['image']) for idx in range(len(dataset['validation']))
         ])
     )
 
     test_orig = torch.from_numpy(
         np.array([
-            preprocess_transforms(dataset['test'][idx]['image'] for idx in range(len(dataset['test'])))
+            preprocess_transforms(dataset['test'][idx]['image']) for idx in range(len(dataset['test']))
         ])
     )
 
     return train_orig, valid_orig, test_orig
 
-def extract_labels(dataset) -> tuple:
+
+def extract_labels(dataset) -> tuple[torch.Tensor]:
     """
     Extract labels from the dataset and convert them into numerical values.
-    Returns training, validation and test label as a Tensor.
+    Returns training, validation and test label as a Tensor, and label mapping as a dict.
+
+    Parameters
+    ----------
+    dataset : pd.DataFrame or Dataset
+        Dataset containing labels
+
+    Returns
+    -------
+    tuple of torch.Tensor and dict
     """
 
     le = LabelEncoder()
@@ -126,7 +136,27 @@ def extract_labels(dataset) -> tuple:
     valid_labels = torch.from_numpy(le.transform(np.array(dataset['validation']['dx'])))
     test_labels = torch.from_numpy(le.transform(np.array(dataset['test']['dx'])))
 
-    return train_labels, valid_labels, test_labels
+    mapping_dict = get_labels_mapping(labelencoder=le)
+
+    return train_labels, valid_labels, test_labels, mapping_dict
+
+
+def get_labels_mapping(labelencoder: LabelEncoder) -> dict:
+    """
+    Return a dictionnary containing the mapping between labels and tags.
+    Key is an integer and value a string.
+
+    Parameters
+    ----------
+    labelencoder : LabelEncoder
+        Scikit-learn LabelEncoder
+
+    Returns
+    -------
+    dict
+    """
+
+    return dict(zip(labelencoder.transform(labelencoder.classes_), labelencoder.classes_))
 
 
 def create_tensor_dataset(data: torch.Tensor = None, labels: torch.Tensor = None) -> TensorDataset:
