@@ -4,36 +4,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 
-class BasicBlock(nn.Module):
-    def __init__(self, in_channels, out_channels, stride=1):
-        super(BasicBlock, self).__init__()
-
-        self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=3, stride=stride, padding=1, bias=False)
-        self.bn1 = nn.BatchNorm2d(out_channels)
-        self.relu = nn.ReLU(inplace=True)
-
-        self.conv2 = nn.Conv2d(out_channels, out_channels, kernel_size=3, stride=1, padding=1, bias=False)
-        self.bn2 = nn.BatchNorm2d(out_channels)
-
-        self.shortcut = nn.Sequential()
-
-        if stride != 1 or in_channels != out_channels:
-            self.shortcut = nn.Sequential(
-                nn.Conv2d(in_channels, out_channels, kernel_size=1, stride=stride, bias=False),
-                nn.BatchNorm2d(out_channels)
-            )
-
-    def forward(self, x):
-        out = self.conv1(x)
-        out = self.bn1(out)
-        out = self.relu(out)
-        out = self.conv2(out)
-        out = self.bn2(out)
-        out += self.shortcut(x)
-        out = self.relu(out)
-
-        return out
-
 
 class SmallNetwork(nn.Module):
 
@@ -57,6 +27,7 @@ class SmallNetwork(nn.Module):
         self.fc1 = nn.Linear(in_features=10_368, out_features=6_400)
         self.fc2 = nn.Linear(in_features=6_400, out_features=1_280)
         self.fc3 = nn.Linear(in_features=1_280, out_features=7)
+
 
     def forward(self, x):
         x = self.conv1(x)
@@ -82,6 +53,41 @@ class SmallNetwork(nn.Module):
         output = F.log_softmax(x, dim=1)
 
         return output
+    
+
+class BasicBlock(nn.Module):
+    def __init__(self, in_channels, out_channels, stride=1):
+        super(BasicBlock, self).__init__()
+
+        self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=3, stride=stride, padding=1, bias=False)
+        self.bn1 = nn.BatchNorm2d(out_channels)
+        self.relu = nn.ReLU(inplace=True)
+
+        self.conv2 = nn.Conv2d(out_channels, out_channels, kernel_size=3, stride=1, padding=1, bias=False)
+        self.bn2 = nn.BatchNorm2d(out_channels)
+
+        # Shortcut connection
+        self.shortcut = nn.Sequential()
+
+        if stride != 1 or in_channels != out_channels:
+            self.shortcut = nn.Sequential(
+                nn.Conv2d(in_channels, out_channels, kernel_size=1, stride=stride, bias=False),
+                nn.BatchNorm2d(out_channels)
+            )
+
+    def forward(self, x):
+        # Convolution 1
+        out = self.conv1(x)
+        out = self.bn1(out)
+        out = self.relu(out)
+        # Convolution 2
+        out = self.conv2(out)
+        out = self.bn2(out)
+        # Shortcut connection
+        out += self.shortcut(x) 
+        out = self.relu(out)
+
+        return out
 
 
 class ResNet18(nn.Module):
