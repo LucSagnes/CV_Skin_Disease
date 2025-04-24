@@ -5,22 +5,11 @@ More than 50% of lesions are confirmed through histopathology (histo), the groun
 
 
 Create a virtual environment with 
- "conda create -n cv_skin_cancer python=3.11"
+ "conda create -n cv_skin_cancer python=3.12"
 
  and then 
 
- `conda activate cv_skin_cancer python=3.11`
-
-
-## Download the data
-Make sure git-lfs is installed (https://git-lfs.com)
-`git lfs install`
-
-Then you can just downloa the data for the project with 
-`git clone https://huggingface.co/datasets/marmal88/skin_cancer`
-
-If you want to clone without large files - just their pointers
-`GIT_LFS_SKIP_SMUDGE=1 git clone https://huggingface.co/datasets/marmal88/skin_cancer`
+ `conda activate cv_skin_cancer python=3.12`
 
 
 ## Notebook Usage
