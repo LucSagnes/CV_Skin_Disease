@@ -149,7 +149,7 @@ def train_model(
         optimizer: torch.optim,
         epoch: int, 
         save: bool, 
-        verbose: bool
+        verbose: int
     ) -> Tuple[float]:
     """
     Train a model with the specified optimizer and loss function, over the number of epochs.
@@ -171,8 +171,10 @@ def train_model(
         Number of epoch to train the model
     save : bool
         Set True to return the loss and accuracy history
-    verbose : bool
-        Set True to print performance.
+    verbose : int
+        Print loss and accuracy
+        * 1 : For each n batches
+        * 2 : For each n batches and for each epoch
 
     Returns
     -------
@@ -201,7 +203,7 @@ def train_model(
         corrects += preds.eq(label.view_as(preds)).sum().item()
 
         # Print loss every x batches
-        if verbose:
+        if verbose >= 1:
             if batch_idx % 10 == 0:
                 print("Train Epoch {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}".format(
                     epoch, batch_idx * len(data), len(train_loader.dataset),
@@ -212,8 +214,8 @@ def train_model(
     overall_accuracy = 100 * corrects / len(train_loader.dataset)
 
     # Print epoch average loss and accuracy
-    if verbose:
-        print("Train set : Average loss {:.4f}, Accuracy : {}/{} ({:.0f}%)".format(
+    if verbose == 2:
+        print("\nTrain set : Average loss {:.4f}, Accuracy : {}/{} ({:.0f}%)".format(
             avg_loss, corrects, len(train_loader.dataset), overall_accuracy
         ))
 
