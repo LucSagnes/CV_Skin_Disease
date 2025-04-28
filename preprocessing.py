@@ -228,6 +228,7 @@ def extract_labels(
         Dataset containing labels.
     label_encoder : LabelEncoder
         Label encoder object.
+
     Returns
     -------
     torch.Tensor
@@ -305,6 +306,9 @@ def get_labels_mapping(labelencoder: LabelEncoder) -> dict:
     Returns
     -------
     dict
+
+    Example
+    
     """
 
     return dict(zip(labelencoder.transform(labelencoder.classes_), labelencoder.classes_))
