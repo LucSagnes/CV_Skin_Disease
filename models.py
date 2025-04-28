@@ -171,7 +171,7 @@ class EarlyStopping():
             # If counter greater or equal than patience then early stop
             if self.counter >= self.patience:
                 self.early_stop = True
-                self.epoch_stop = epoch
+                self.epoch_stop = epoch - self.patience
 
         else:
             self.best_score = score
