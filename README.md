@@ -7,9 +7,11 @@ More than 50% of lesions are confirmed through histopathology (histo), the groun
 Create a virtual environment with 
  `conda env create -n cv_skin_cancer --file environment.yaml`
 
- and then 
+then goes to : https://pytorch.org/get-started/locally/ and select according to your machine
 
- `conda activate cv_skin_cancer`
+and then 
+
+`conda activate cv_skin_cancer`
 
 
 ## Notebook Usage
