@@ -1,10 +1,12 @@
 from typing import Tuple
 
 import torch
-from torch.utils.data import DataLoader, TensorDataset
+from torch.utils.data import DataLoader
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+
+from torchvision.transforms.functional import adjust_contrast
 
 
 class SmallNetwork(nn.Module):
@@ -150,14 +152,17 @@ class EarlyStopping():
         self.counter = 0
         self.best_model_state = None
 
+
     def __call__(self, val_loss, model):
         score = -val_loss
         if self.best_score is None:
             self.best_score = score
             self.best_model_state = model.state_dict()
 
+        # If score doesn't improve, add 1 to counter
         elif score < self.best_score + self.delta:
             self.counter += 1
+            # If counter greater or equal than patience then early stop
             if self.counter >= self.patience:
                 self.early_stop = True
 
@@ -165,6 +170,7 @@ class EarlyStopping():
             self.best_score = score
             self.best_model_state = model.state_dict()
             self.counter = 0
+
     
     def load_best_model(self, model):
         model.load_state_dict(self.best_model_state)
@@ -214,9 +220,9 @@ def train_model(
 
     losses, corrects = [], 0
 
-    for batch_idx, (data, label) in enumerate(train_loader):
+    for batch_idx, sample in enumerate(train_loader):
         # Sent data and label to specified device
-        data, label = data.to(device), label.to(device)
+        data, label = sample['image'].to(device), sample['label'].to(device)
         optimizer.zero_grad() # Set all gradients to 0
         y_pred = model(data)
         loss = loss_function(y_pred, label)
@@ -236,7 +242,7 @@ def train_model(
             if batch_idx % 10 == 0:
                 print("Train Epoch {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}".format(
                     epoch, batch_idx * len(data), len(train_loader.dataset),
-                    100 * batch_idx / len(train_loader.dataset), loss.item()
+                    100 * batch_idx * len(data) / len(train_loader.dataset), loss.item()
                 ))
     # Compute epoch average train loss and train accuracy
     avg_loss = sum(losses) / len(losses)
@@ -255,7 +261,6 @@ def train_model(
         return 0.0, 0.0
 
 
-
 def validate_model(
         model: nn.Module, 
         device: torch.device,
@@ -265,8 +270,29 @@ def validate_model(
         verbose: bool
     ) -> Tuple[float]:
     """
-    
+    Compute loss and accuracy on validation set.
     Return loss and accuracy if save=True, otherwise return (0, 0).
+
+    Parameters
+    ----------
+    model : pytorch model
+        model to be trained
+    device : torch.device
+        Device on which the model will be trained
+    valid_loader : torch.DataLoader
+        Validation DataLoader
+    loss_function : nn.functional
+        Loss function
+    save : bool
+        Set True to return the loss and accuracy history
+    verbose : int
+        Print loss and accuracy
+        * 1 : For each n batches
+        * 2 : For each n batches and for each epoch
+
+    Returns
+    -------
+    (float, float)
     """
     model.to(device)
 
@@ -274,9 +300,9 @@ def validate_model(
 
     model.eval() # Set model in evaluation mode
     with torch.no_grad():
-        for data, label in valid_loader:
+        for sample in valid_loader:
             # Sent data and label to specified device
-            data, label = data.to(device), label.to(device)
+            data, label = sample['image'].to(device), sample['label'].to(device)
 
             # Predict and compute loss
             y_pred = model(data)
