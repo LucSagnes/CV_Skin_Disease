@@ -19,6 +19,6 @@ To run this project on your device :
 3. Create a virtual environment with  `conda env create -n cv_skin_cancer --file environment.yaml`
 
 4. Then goes to : https://pytorch.org/get-started/locally/ and select according to your machine.
-![Example](https://github.com/LucSagnes/CV_Lung_Cancer/tree/main/Others/cuda_install_ex.png)
+![screenshot](Others/cuda_install_ex.png)
 
 5. Activate your conda environment with `conda activate cv_skin_cancer`
