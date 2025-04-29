@@ -1,39 +1,24 @@
-# Skin diseases recognition
+# Deep Learning skin diseases recognition
 
 Deep learning skin diseases recognition system using CNN (Convolutional Neural Network) and ResNet (Residual Neural Network).
 
 ## Authors
-- [@IRRIEN florian](https://github.com/irrif)
-- [@BROGIALDI Albin](https://github.com/albinbrogialdi)
-- [@SAGNES Luc](https://github.com/LucSagnes)
-- [@DELATTRE HUGUES](https://github.com/hugdelattre)
+- [@Florian IRRIEN](https://github.com/irrif)
+- [@Albin BROGIALDI](https://github.com/albinbrogialdi)
+- [@Luc SAGNES](https://github.com/LucSagnes)
+- [@Hugues DELATTRE](https://github.com/hugdelattre)
 
 
-## Deep Learning Project on Skin Cancer
+## Installation 
+To run this project on your device :
 
-More than 50% of lesions are confirmed through histopathology (histo), the ground truth for the rest of the cases is either follow-up examination (follow_up), expert consensus (consensus), or confirmation by in-vivo confocal microscopy (confocal).
+1. Clone this repository on your local machine : `git clone https://github.com/LucSagnes/CV_Lung_Cancer.git`
 
+2. Navigate to project directory : `cd CV_Lung_Cancer`
 
-Create a virtual environment with 
- `conda env create -n cv_skin_cancer --file environment.yaml`
+3. Create a virtual environment with  `conda env create -n cv_skin_cancer --file environment.yaml`
 
-then goes to : https://pytorch.org/get-started/locally/ and select according to your machine, then copy the command and paste it in your terminal.
+4. Then goes to : https://pytorch.org/get-started/locally/ and select according to your machine.
+![Example](https://github.com/LucSagnes/CV_Lung_Cancer/tree/main/Others/cuda_install_ex.png)
 
-and then 
-`conda activate cv_skin_cancer`
-
-
-## Notebook Usage
-For notebook we used Marimo which is git friendly, if you want a Jupyter notebook : 
-`marimo convert your_notebook.ipynb > your_notebook.py`
-
-To run the notebook, 
-`marimo run your_notebook.py`
-
-To edit : 
-`marimo edit`
-
-https://github.com/marimo-team/marimo for more information 
-
-
-
+5. Activate your conda environment with `conda activate cv_skin_cancer`
