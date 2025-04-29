@@ -1,4 +1,14 @@
-# CV Skin_Cancer
+# Skin diseases recognition
+
+Deep learning skin diseases recognition system using CNN (Convolutional Neural Network) and ResNet (Residual Neural Network).
+
+## Authors
+- [@IRRIEN florian](https://github.com/irrif)
+- [@BROGIALDI Albin](https://github.com/albinbrogialdi)
+- [@SAGNES Luc](https://github.com/LucSagnes)
+- [@DELATTRE HUGUES](https://github.com/hugdelattre)
+
+
 ## Deep Learning Project on Skin Cancer
 
 More than 50% of lesions are confirmed through histopathology (histo), the ground truth for the rest of the cases is either follow-up examination (follow_up), expert consensus (consensus), or confirmation by in-vivo confocal microscopy (confocal).
